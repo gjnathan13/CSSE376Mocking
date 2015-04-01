@@ -50,5 +50,59 @@ namespace ExpediaTest
 		{
 			new Car(-5);
 		}
+
+        [TestMethod]
+        public void TestThatCarGetsCarLocationFromDatabase(){
+
+            IDatabase mockDB = mocks.DynamicMock<IDatabase>();
+            String carOne = "Red Zone Spot 5";
+            String carTwo = "Blue Zone Spot 11";
+           
+            using (mocks.Ordered()) {
+            Expect.Call(mockDB.getCarLocation(13)).Return(carOne);
+            Expect.Call(mockDB.getCarLocation(244)).Return(carTwo);
+            }
+            mockDB.Stub(x => x.getCarLocation(Arg<Int32>.Is.Anything)).Return("No car found");
+
+            mocks.ReplayAll();
+
+            Car target = new Car(15);
+            target.Database = mockDB;
+
+            String result;
+            result = target.getCarLocation(13);
+            Assert.AreEqual(carOne, result);
+            result = target.getCarLocation(244);
+            Assert.AreEqual(carTwo, result);
+            result = target.getCarLocation(25);
+            Assert.AreEqual("No car found", result);
+            mocks.VerifyAll();
+        }
+
+        [TestMethod()]
+        public void TestThatCarDoesGetMileageFromDatabase()
+        {
+            IDatabase mockDatabase = mocks.StrictMock<IDatabase>();
+            Int32 Miles = 10000;
+
+            Expect.Call(mockDatabase.Miles).PropertyBehavior();
+
+            mocks.ReplayAll();
+            mockDatabase.Miles = Miles;
+            var target = new Car(10);
+            target.Database = mockDatabase;
+
+            int currentMilage = target.Mileage;
+            Assert.AreEqual(currentMilage, Miles);
+            mocks.VerifyAll();
+        }
+
+        [TestMethod()]
+        public void TestTheCarIsAssignedWithProperName()
+        {
+            var targetCar = ObjectMother.BMW();
+            String targetName = "BMW X4 Coupe";
+            Assert.AreEqual(targetCar.Name, targetName);
+        }
 	}
 }
